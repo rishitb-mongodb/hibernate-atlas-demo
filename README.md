@@ -45,15 +45,15 @@ export MONGODB_URI='mongodb+srv://<user>:<password>@<cluster>.mongodb.net/sample
 The database name is spliced in for you if the connection string doesn't already have one.
 
 ```bash
-mvn -q compile exec:java -Dexec.args=verify
+mvn -q compile exec:java "-Dexec.args=verify"
 ```
 
 ## Running
 
 ```bash
-mvn -q compile exec:java -Dexec.args=1
-mvn -q compile exec:java -Dexec.args=2   # prints nothing until revealed
-mvn -q compile exec:java -Dexec.args=3
+mvn -q compile exec:java "-Dexec.args=1"
+mvn -q compile exec:java "-Dexec.args=2"   # prints nothing until revealed
+mvn -q compile exec:java "-Dexec.args=3"
 ```
 
 Act 2 does nothing until its code is revealed:
@@ -66,7 +66,7 @@ Act 2 does nothing until its code is revealed:
 Clean up any leftover `staffPick` fields with:
 
 ```bash
-mvn -q compile exec:java -Dexec.args=reset-data
+mvn -q compile exec:java "-Dexec.args=reset-data"
 ```
 
 ## Configuration, in full
