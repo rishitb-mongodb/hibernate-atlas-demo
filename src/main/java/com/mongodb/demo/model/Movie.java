@@ -5,28 +5,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.util.List;
 import org.bson.types.ObjectId;
 import org.hibernate.annotations.DynamicUpdate;
 
-/**
- * Maps the {@code sample_mflix.movies} collection.
- *
- * <p>Nothing here is MongoDB-specific except {@link ObjectId} and {@link ObjectIdGenerator} -- the
- * rest is plain JPA. There is no schema, no DDL and no migration behind it.
- *
- * <p>Lines prefixed {@code //~} are revealed during the demo. Either delete the prefix by hand or
- * run {@code reveal 2} / {@code reveal 3}.
- */
+/** Maps {@code sample_mflix.movies}. Plain JPA, plus two embedded structs and three arrays. */
 @Entity(name = "Movie")
 @Table(name = "movies")
-// Without this, Hibernate writes every mapped field on update. With it, the $set carries only
-// the fields that actually changed -- which is what you want against a document store.
-@DynamicUpdate
+@DynamicUpdate // updates $set only the fields that changed, not the whole document
 public class Movie {
 
-    /** {@code @Column(name = "_id")} is implied for the identifier, so it is not written out. */
     @Id
     @ObjectIdGenerator
     private ObjectId id;
@@ -35,36 +23,20 @@ public class Movie {
     private Integer year;
     private String rated;
     private Integer runtime;
-    private String plot;
 
-    /** A BSON date maps to {@code java.time.Instant}. */
-    private Instant released;
-
-    /** Hibernate uses the Java property name as the field name, so map this one explicitly. */
     @Column(name = "num_mflix_comments")
     private Integer numMflixComments;
 
-    //@ACT2-START -- the document model is first class
-    //~ /** A BSON sub-document. One document, one read: no join, no second table. */
-    //~ private Imdb imdb;
-    //~
-    //~ private Awards awards;
-    //~
-    //~ /** BSON arrays map straight onto Java collections. No join table, no @ElementCollection. */
-    //~ private List<String> genres;
-    //~
-    //~ private List<String> directors;
-    //~
-    //~ private List<String> countries;
-    //@ACT2-END
+    private Imdb imdb;
+    private Awards awards;
+    private List<String> genres;
+    private List<String> directors;
 
-    //@ACT3-START -- schema flexibility: one new field, no ALTER TABLE, no migration, no downtime
+    //@REVEAL-START
     //~ private Boolean staffPick;
-    //@ACT3-END
+    //@REVEAL-END
 
-    protected Movie() {
-        // required by Hibernate
-    }
+    protected Movie() {}
 
     public ObjectId getId() {
         return id;
@@ -86,41 +58,27 @@ public class Movie {
         return runtime;
     }
 
-    public String getPlot() {
-        return plot;
-    }
-
-    public Instant getReleased() {
-        return released;
-    }
-
     public Integer getNumMflixComments() {
         return numMflixComments;
     }
 
-    //@ACT2-START -- accessors for the fields above
-    //~ public Imdb getImdb() {
-        //~ return imdb;
-    //~ }
-    //~
-    //~ public Awards getAwards() {
-        //~ return awards;
-    //~ }
-    //~
-    //~ public List<String> getGenres() {
-        //~ return genres;
-    //~ }
-    //~
-    //~ public List<String> getDirectors() {
-        //~ return directors;
-    //~ }
-    //~
-    //~ public List<String> getCountries() {
-        //~ return countries;
-    //~ }
-    //@ACT2-END
+    public Imdb getImdb() {
+        return imdb;
+    }
 
-    //@ACT3-START -- accessors for staffPick
+    public Awards getAwards() {
+        return awards;
+    }
+
+    public List<String> getGenres() {
+        return genres;
+    }
+
+    public List<String> getDirectors() {
+        return directors;
+    }
+
+    //@REVEAL-START
     //~ public Boolean getStaffPick() {
         //~ return staffPick;
     //~ }
@@ -129,10 +87,11 @@ public class Movie {
         //~ this.staffPick = staffPick;
         //~ return this;
     //~ }
-    //@ACT3-END
+    //@REVEAL-END
 
     @Override
     public String toString() {
-        return "%s (%s) rated=%s runtime=%s comments=%s".formatted(title, year, rated, runtime, numMflixComments);
+        return "%s (%s) rated=%s runtime=%s imdb=%s awards=%s genres=%s directors=%s"
+                .formatted(title, year, rated, runtime, imdb, awards, genres, directors);
     }
 }

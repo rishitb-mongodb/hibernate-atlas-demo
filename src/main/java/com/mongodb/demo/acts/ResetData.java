@@ -14,17 +14,14 @@ public final class ResetData {
 
     public static void run() {
         try (var mongoClient = MongoClients.create(Persistence.connectionString())) {
-            var database = mongoClient.getDatabase(Persistence.DATABASE);
-
             heading("Resetting demo state");
-            var unset = database.getCollection("movies", BsonDocument.class)
+            var result = mongoClient
+                    .getDatabase(Persistence.DATABASE)
+                    .getCollection("movies", BsonDocument.class)
                     .updateMany(
                             BsonDocument.parse("{ \"staffPick\": { \"$exists\": true } }"),
                             BsonDocument.parse("{ \"$unset\": { \"staffPick\": \"\" } }"));
-            row("removed staffPick from " + unset.getModifiedCount() + " movies");
-
-            database.getCollection("hibernate_watchlist").drop();
-            row("dropped hibernate_watchlist");
+            row("removed staffPick from " + result.getModifiedCount() + " movies");
         }
     }
 }

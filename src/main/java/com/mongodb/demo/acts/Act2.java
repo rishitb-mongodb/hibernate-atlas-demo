@@ -1,74 +1,55 @@
 package com.mongodb.demo.acts;
 
 import static com.mongodb.demo.Mql.heading;
-import static com.mongodb.demo.Mql.note;
 import static com.mongodb.demo.Mql.row;
 
 import com.mongodb.demo.Persistence;
 import com.mongodb.demo.model.Movie;
 
-/**
- * ACT 2 -- The document model is first class.
- *
- * <p>Reveal the {@code ACT2} blocks in {@link Movie} and in this file.
- *
- * <p>A relational mapping of this entity needs three extra tables and three joins: one for the imdb
- * columns, one for awards, one per array. Here it is one document and one read.
- */
+/** Schema flexibility. Reveal the {@code //@REVEAL} block in Movie.java first. See DEMO_SCRIPT.md. */
 public final class Act2 {
 
     private Act2() {}
 
+    private static final String TITLE = "The Dark Knight";
+
     public static void run() {
         try (var sessionFactory = Persistence.sampleMflix()) {
 
-            //@ACT2-START
-            //~ heading("2a. Querying into a sub-document -- m.imdb.rating becomes the path imdb.rating");
-            //~ var acclaimed = sessionFactory.fromTransaction(session -> session.createSelectionQuery(
-                            //~ """
-                            //~ from Movie m
-                            //~ where m.imdb.rating >= :rating and m.imdb.votes >= :votes and m.year >= 1900
-                            //~ order by m.imdb.rating desc
-                            //~ """,
-                            //~ Movie.class)
-                    //~ .setParameter("rating", 8.6d)
-                    //~ .setParameter("votes", 500_000)
-                    //~ .setMaxResults(5)
-                    //~ .getResultList());
-            //~ acclaimed.forEach(m -> row("%-38s imdb=%s (%s votes)  awards=%s wins / %s nominations"
-                    //~ .formatted(
-                            //~ m.getTitle(),
-                            //~ m.getImdb().rating(),
-                            //~ m.getImdb().votes(),
-                            //~ m.getAwards().wins(),
-                            //~ m.getAwards().nominations())));
-            //~ note("Two sub-documents and the scalars all arrived in a single document read.");
+            //@REVEAL-START
+            //~ heading("1. The field doesn't exist yet");
+            //~ var before = sessionFactory.fromTransaction(session -> session.createSelectionQuery(
+                            //~ "from Movie m where m.title = :title and m.year >= 1900", Movie.class)
+                    //~ .setParameter("title", TITLE)
+                    //~ .setMaxResults(1)
+                    //~ .getSingleResultOrNull());
+            //~ row(before.getTitle() + " staffPick = " + before.getStaffPick());
             //~
-            //~ heading("2b. Querying inside an array -- array_contains() becomes an equality match");
-            //~ var nolan = sessionFactory.fromTransaction(session -> session.createSelectionQuery(
-                            //~ """
-                            //~ from Movie m
-                            //~ where array_contains(m.directors, :director) and m.year >= 1900
-                            //~ order by m.year desc
-                            //~ """,
-                            //~ Movie.class)
-                    //~ .setParameter("director", "Christopher Nolan")
-                    //~ .setMaxResults(5)
-                    //~ .getResultList());
-            //~ nolan.forEach(m -> row("%-28s %s".formatted(m.getTitle(), m.getGenres())));
-            //~ note("It renders as an array $type guard plus a plain equality. MongoDB matches an");
-            //~ note("array by any element, so there is no join table and no DISTINCT to undo a fan-out.");
-            //~
-            //~ heading("2c. One entity, one document");
-            //~ acclaimed.stream().findFirst().ifPresent(m -> {
-                //~ row("title     = " + m.getTitle());
-                //~ row("genres    = " + m.getGenres());
-                //~ row("countries = " + m.getCountries());
-                //~ row("directors = " + m.getDirectors());
-                //~ row("imdb      = " + m.getImdb());
-                //~ row("awards    = " + m.getAwards());
+            //~ heading("2. Write it on one entity");
+            //~ sessionFactory.inTransaction(session -> {
+                //~ var movie = session.find(Movie.class, before.getId());
+                //~ movie.setStaffPick(true);
             //~ });
-            //@ACT2-END
+            //~
+            //~ heading("3. Query on the brand-new field immediately");
+            //~ var picks = sessionFactory.fromTransaction(session -> session.createSelectionQuery(
+                            //~ "from Movie m where m.staffPick = true and m.year >= 1900", Movie.class)
+                    //~ .getResultList());
+            //~ picks.forEach(m -> row(m.getTitle() + " staffPick = " + m.getStaffPick()));
+            //~
+            //~ heading("4. Bulk-backfill a slice with one HQL update");
+            //~ var updated = sessionFactory.fromTransaction(session -> session.createMutationQuery(
+                            //~ "update Movie m set m.staffPick = true where m.imdb.rating >= :rating and m.year >= 1900")
+                    //~ .setParameter("rating", 8.8d)
+                    //~ .executeUpdate());
+            //~ row(updated + " documents now carry staffPick");
+            //~
+            //~ heading("5. Cleanup");
+            //~ var cleared = sessionFactory.fromTransaction(session -> session.createMutationQuery(
+                            //~ "update Movie m set m.staffPick = null where m.staffPick is not null")
+                    //~ .executeUpdate());
+            //~ row("reset " + cleared + " documents");
+            //@REVEAL-END
         }
     }
 }
