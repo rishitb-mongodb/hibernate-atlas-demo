@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+      Bare %msg so the MQL stands on its own on a projector. Our own commentary is prefixed
+      with >>>, # or -, so the unprefixed JSON lines are always the generated MongoDB commands.
+    -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- This is the line that matters: hibernate.show_sql routes through this logger. -->
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+
+    <!-- Everything else stays quiet. -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.mongodb.driver" level="WARN"/>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

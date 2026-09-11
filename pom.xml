@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.mongodb.demo</groupId>
+    <artifactId>hibernate-atlas-demo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>MongoDB Extension for Hibernate ORM :: sample_mflix demo</name>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- The one dependency that makes Hibernate speak MongoDB. -->
+        <mongodb-hibernate.version>1.0.0-alpha2</mongodb-hibernate.version>
+        <!-- Pinned to the version the extension is built against (its POM imports this BOM). -->
+        <hibernate.version>7.4.5.Final</hibernate.version>
+        <logback.version>1.5.21</logback.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-platform</artifactId>
+                <version>${hibernate.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!--
+          Pulls in hibernate-core 7.4.x and mongodb-driver-sync transitively.
+          No JDBC driver, no connection pool, no dialect configuration needed.
+        -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-hibernate</artifactId>
+            <version>${mongodb-hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <mainClass>com.mongodb.demo.Demo</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

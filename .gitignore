@@ -1,0 +1,15 @@
+target/
+
+# The presenter's script. Intentionally not committed.
+DEMO_SCRIPT.md
+
+# Never commit a connection string.
+.env
+*.local
+
+.idea/
+*.iml
+.vscode/
+
+# Local Claude Code settings
+.claude/settings.local.json
