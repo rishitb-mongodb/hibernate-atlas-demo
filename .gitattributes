@@ -1,0 +1,4 @@
+# Normalize line endings to LF in the repository regardless of a contributor's local
+# core.autocrlf setting, so editing on Windows doesn't produce a spurious CRLF/LF diff on
+# every file a tool happens to touch.
+* text=auto eol=lf
