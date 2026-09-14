@@ -4,7 +4,12 @@
 #   .\reveal.ps1 hide     put it back
 #
 # Useful live: if hand-editing goes wrong, this restores a known-good state.
-param([Parameter(Mandatory = $true)][ValidateSet('show', 'hide')][string]$Mode)
+param([string]$Mode)
+
+if ($Mode -ne 'show' -and $Mode -ne 'hide') {
+    Write-Host 'usage: .\reveal.ps1 {show|hide}'
+    exit 2
+}
 
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
