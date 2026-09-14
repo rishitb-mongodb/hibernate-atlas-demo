@@ -2,12 +2,15 @@
 <configuration>
 
     <!--
-      Bare %msg so the MQL stands on its own on a projector. Our own commentary is prefixed
-      with >>>, # or -, so the unprefixed JSON lines are always the generated MongoDB commands.
+      %mql (PrettyMqlConverter) indents the MQL Hibernate logs, instead of one long compacted
+      line. Our own commentary is prefixed with >>>, # or -, so an unprefixed, indented JSON
+      block is always a generated MongoDB command.
     -->
+    <conversionRule conversionWord="mql" class="com.mongodb.demo.PrettyMqlConverter" />
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%msg%n</pattern>
+            <pattern>%mql%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>

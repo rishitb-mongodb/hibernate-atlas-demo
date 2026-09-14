@@ -1,26 +1,34 @@
 # MongoDB Extension for Hibernate ORM — `sample_mflix` demo
 
-A small Hibernate application, built for a **10-minute live demo**, that runs against the Atlas
-`sample_mflix` sample dataset using the **MongoDB Extension for Hibernate ORM**, release
-`1.0.0-alpha2`.
+A small Hibernate application that runs against the Atlas `sample_mflix` sample dataset using the
+[MongoDB Extension for Hibernate ORM](https://github.com/mongodb/mongo-hibernate), release
+`1.0.0-alpha2`. It's built as three short, self-contained acts, originally for a 10-minute
+conference demo — that structure also makes it a decent guided tour if you're evaluating the
+extension on your own: each act runs independently and prints the MQL it generates, so you can see
+exactly what Hibernate is doing under the hood.
 
-Three acts:
+> **Status:** independent, unofficial companion code — not MongoDB's official documentation.
+> It targets a **pre-GA alpha release** (`1.0.0-alpha2`); check the
+> [releases page](https://github.com/mongodb/mongo-hibernate/releases) for the current version,
+> since behavior may change before GA.
 
 | Act | Shows |
 | --- | --- |
 | 1 | Familiar Hibernate (HQL, `find()`) + embedded structs (`@Struct`) and arrays as first-class mappings |
-| 2 | Schema flexibility — add a field with no migration, no downtime. Code ships commented out and is revealed live. |
+| 2 | Schema flexibility — add a field with no migration, no downtime. Ships commented out, revealed with one command. |
 | 3 | JOINs across two collections, translated to `$lookup` |
 
-The narration lives in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md) (gitignored — it's the presenter's
-copy) and in the console output the acts print, not in code comments. The code is meant to be read
-on a screen in a few seconds.
+The narration lives in the console output the acts print, not in code comments — the code is meant
+to be read in a few seconds. (A separate, more detailed presenter script exists locally but isn't
+part of this repo.)
 
 ## Requirements
 
 - **Java 17+** (this project targets 21), **Maven 3.9+**
-- An **Atlas cluster** (or any replica set) with the **`sample_mflix`** sample dataset loaded.
-  Standalone deployments are not supported: the extension needs transactions.
+- An **Atlas cluster** (or any MongoDB replica set — standalone deployments aren't supported, since
+  the extension needs transactions) with the **`sample_mflix`** sample dataset loaded. If you don't
+  have it yet, Atlas can load it for you in a couple of clicks — see
+  [Load Sample Data](https://www.mongodb.com/docs/atlas/sample-data/).
 
 The extension is the only dependency; it pulls in Hibernate ORM 7.4.5 and the MongoDB Java driver.
 
@@ -34,6 +42,8 @@ The extension is the only dependency; it pulls in Hibernate ORM 7.4.5 and the Mo
 
 ## Setup
 
+Set `MONGODB_URI` to a connection string for your cluster (from Atlas: **Connect → Drivers**):
+
 ```powershell
 $env:MONGODB_URI = "mongodb+srv://<user>:<password>@<cluster>.mongodb.net/sample_mflix"
 ```
@@ -44,6 +54,8 @@ export MONGODB_URI='mongodb+srv://<user>:<password>@<cluster>.mongodb.net/sample
 
 The database name is spliced in for you if the connection string doesn't already have one.
 
+Then check the connection and the dataset:
+
 ```bash
 mvn -q compile exec:java "-Dexec.args=verify"
 ```
@@ -52,18 +64,27 @@ mvn -q compile exec:java "-Dexec.args=verify"
 
 ```bash
 mvn -q compile exec:java "-Dexec.args=1"
-mvn -q compile exec:java "-Dexec.args=2"   # prints nothing until revealed
+mvn -q compile exec:java "-Dexec.args=2"   # prints nothing until revealed, see below
 mvn -q compile exec:java "-Dexec.args=3"
 ```
 
-Act 2 does nothing until its code is revealed:
+Act 2 ships with its code commented out and does nothing until it's revealed:
 
 ```bash
-./reveal show      # ./reveal.ps1 show on Windows
-./reveal hide       # ./reveal.ps1 hide
+./reveal show
+./reveal hide
 ```
 
-Clean up any leftover `staffPick` fields with:
+```powershell
+.\reveal.cmd show
+.\reveal.cmd hide
+```
+
+`reveal.cmd` runs `reveal.ps1` with `-ExecutionPolicy Bypass`, so it works from PowerShell or
+`cmd.exe` without touching your system's script-execution policy. Don't double-click `reveal.ps1`
+directly — Windows opens `.ps1` files in a text editor rather than running them.
+
+Clean up any leftover `staffPick` fields left by an interrupted Act 2 run with:
 
 ```bash
 mvn -q compile exec:java "-Dexec.args=reset-data"
@@ -71,7 +92,7 @@ mvn -q compile exec:java "-Dexec.args=reset-data"
 
 ## Configuration, in full
 
-The entire MongoDB configuration is two settings (`Persistence.java`):
+The entire MongoDB configuration is two settings (see `Persistence.java`):
 
 ```properties
 jakarta.persistence.jdbc.url=mongodb+srv://.../sample_mflix
@@ -86,15 +107,16 @@ MongoDB's semantics rather than SQL's three-valued logic.
 
 `movies` and `comments` are read-only, except Act 2, which sets `staffPick` on a small number of
 documents and clears it again at the end of its own run. `reset-data` clears any that are left
-over from an interrupted run.
+over from an interrupted run. Nothing else is created, modified, or dropped.
 
 ## A note on the sample data
 
 `sample_mflix` is genuinely heterogeneous: a handful of documents store `year` or `imdb.rating` as
 a string rather than a number, which fails a typed entity read. Every query here guards
-`m.year >= 1900` to exclude them; `verify` reports how many your copy has.
+`m.year >= 1900` to exclude them; `verify` reports how many documents in your copy of the dataset
+are affected.
 
-## Known alpha2 boundaries worth knowing before you present
+## Known limitations in `1.0.0-alpha2`
 
 - Aggregate accumulators (`count`, `sum`, `avg`) are not supported yet. `GROUP BY`/`HAVING` over
   columns and expressions is.
@@ -102,6 +124,14 @@ a string rather than a number, which fails a typed entity read. Every query here
   `LEFT OUTER` are.
 - A native query must end in a `$project`, and can't hydrate an entity with a `@Struct` field.
 - `hbm2ddl` schema generation must be `create`/`create-drop`, not `update`.
+
+These were current as of `1.0.0-alpha2` — check the extension's own
+[release notes](https://github.com/mongodb/mongo-hibernate/releases) for what's changed since.
+
+## License
+
+The code in this repository is licensed under the [Apache License 2.0](LICENSE), the same license
+as the MongoDB Extension for Hibernate ORM itself.
 
 ## Links
 
