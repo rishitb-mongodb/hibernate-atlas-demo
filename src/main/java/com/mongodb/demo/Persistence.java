@@ -21,13 +21,16 @@ public final class Persistence {
 
     private Persistence() {}
 
-    /** Read-only access to the sample collections. Schema generation is off. */
+    /**
+     * A {@link SessionFactory} over the sample collections, with schema generation off: nothing is
+     * created, altered, or dropped at bootstrap. That's unrelated to whether the app can write data
+     * -- Act 2's HQL updates against {@code Movie} go through this same factory.
+     */
     public static SessionFactory sampleMflix() {
         var registry = new StandardServiceRegistryBuilder()
                 .applySetting(AvailableSettings.JAKARTA_JDBC_URL, connectionString())
                 .applySetting("com.mongodb.hibernate.semantics.nulls", "MQL")
                 .applySetting(AvailableSettings.JAKARTA_HBM2DDL_DATABASE_ACTION, "none")
-                .applySetting(AvailableSettings.WRAPPER_ARRAY_HANDLING, "allow")
                 .build();
         try {
             var sources = new MetadataSources(registry);
